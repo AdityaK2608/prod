@@ -3,7 +3,19 @@ export type DashboardUser = {
   email: string;
 };
 
+export type DashboardExam = {
+  name: string;
+  code: string;
+  paper: string;
+  classLevel: string | null;
+  subject: string;
+  questions: number | null;
+  marks: number | null;
+  durationMinutes: number | null;
+  targetExamDate: string | null;
+};
+
 export type DashboardData = {
   user: DashboardUser;
-  exam: null;
+  exam: DashboardExam | null;
 };
