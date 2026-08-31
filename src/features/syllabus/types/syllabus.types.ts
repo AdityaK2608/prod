@@ -29,4 +29,8 @@ export type TopicDetail = {
   topic: SyllabusTopic;
   content: TopicContent | null;
   unit: { unitNumber: number; title: string };
+  navigation: {
+    previous: { id: string; number: number; title: string } | null;
+    next: { id: string; number: number; title: string } | null;
+  };
 };
