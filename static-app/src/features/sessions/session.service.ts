@@ -1,3 +1,3 @@
-import { getSessions, saveSession } from "../../lib/data";
+import { getSessions, getSyllabus, getUserExam, saveSession } from "../../lib/data";
 
-export { getSessions, saveSession };
+export { getSessions, getSyllabus, getUserExam, saveSession };
