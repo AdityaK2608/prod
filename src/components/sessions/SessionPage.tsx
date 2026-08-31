@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
-import { Pause, Play, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, CircleX, Pause, Play, RotateCcw, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { saveStudySession } from "@/features/sessions/actions/session.actions";
 import styles from "./SessionPage.module.css";
 
 export function SessionPage({ topics, sessions }: any) {
+  const router = useRouter();
   const [topicId, setTopicId] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
@@ -58,9 +60,27 @@ export function SessionPage({ topics, sessions }: any) {
     });
   };
 
+  const exitSession = () => {
+    if (running || seconds > 0 || notes.trim()) {
+      const confirmed = window.confirm("Exit this session? Unsaved study time will be lost.");
+      if (!confirmed) return;
+    }
+    router.push("/dashboard");
+  };
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
+        <div className={styles.headerNav}>
+          <button type="button" className={styles.backButton} onClick={() => router.back()}>
+            <ArrowLeft size={15} />
+            Back
+          </button>
+          <button type="button" className={styles.exitButton} onClick={exitSession}>
+            <CircleX size={15} />
+            Exit session
+          </button>
+        </div>
         <p>STUDY SESSIONS</p>
         <h1>Study with intention.</h1>
         <span>Track your real study time.</span>
