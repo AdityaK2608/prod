@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, Clock3, TimerReset, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppShell } from "../../components/layout/AppShell";
-import { getDashboardStats, getUserExam } from "../../lib/data";
+import { getDashboardStats, getUserExam } from "./dashboard.service";
 import { navigate } from "../../app/router";
 import type { SessionUser, AppExam } from "../../types/app";
 
