@@ -9,16 +9,35 @@ export async function getDashboardData(): Promise<DashboardData> {
   const metadataName = typeof user.user_metadata?.name === "string" ? user.user_metadata.name.trim() : "";
   const name = metadataName || user.email?.split("@")[0] || "there";
 
-  const { data: profile, error } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("user_exam_profiles")
     .select("target_exam_date, exam_variants!inner(paper, class_level, subject, questions, marks, duration_minutes, exam_catalog!inner(code, name))")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (profileError) throw new Error(profileError.message);
 
   const variant = profile?.exam_variants as any;
   const catalog = variant?.exam_catalog as any;
+
+  let units = 0;
+  let topics = 0;
+
+  if (variant?.id) {
+    const { count: unitCount, error: unitError } = await supabase
+      .from("exam_syllabus_units")
+      .select("id", { count: "exact", head: true })
+      .eq("exam_variant_id", variant.id);
+    if (unitError) throw new Error(unitError.message);
+    units = unitCount ?? 0;
+
+    const { count: topicCount, error: topicError } = await supabase
+      .from("exam_syllabus_topics")
+      .select("id", { count: "exact", head: true })
+      .in("unit_id", units > 0 ? (await supabase.from("exam_syllabus_units").select("id").eq("exam_variant_id", variant.id)).data?.map((row) => row.id) ?? [] : []);
+    if (topicError) throw new Error(topicError.message);
+    topics = topicCount ?? 0;
+  }
 
   return {
     user: { name, email: user.email ?? "" },
@@ -33,5 +52,6 @@ export async function getDashboardData(): Promise<DashboardData> {
       durationMinutes: variant.duration_minutes,
       targetExamDate: profile.target_exam_date,
     } : null,
+    syllabus: { units, topics },
   };
 }
