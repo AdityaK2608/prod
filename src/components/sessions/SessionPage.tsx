@@ -23,12 +23,7 @@ export function SessionPage({ topics, sessions }: Props) {
 
   useEffect(() => {
     if (!running || runStartedAtMs === null) return;
-    const tick = () => {
-      setSeconds((previous) => previous + Math.max(0, Math.floor((Date.now() - runStartedAtMs) / 1000) - previous + seconds));
-    };
-    const id = window.setInterval(() => {
-      setSeconds((previous) => previous + 1);
-    }, 1000);
+    const id = window.setInterval(() => setSeconds((value) => value + 1), 1000);
     return () => window.clearInterval(id);
   }, [running, runStartedAtMs]);
 
