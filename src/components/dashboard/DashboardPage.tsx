@@ -1,6 +1,6 @@
 import { BarChart3, BookOpen, CalendarDays, ChevronRight, Clock3, LayoutDashboard, Settings, Target, TimerReset, Trophy } from "lucide-react";
 import { getDashboardData } from "@/features/dashboard/services/dashboard.service";
-import "./DashboardPage.module.css";
+import styles from "./DashboardPage.module.css";
 
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", group: "OVERVIEW" },
@@ -25,7 +25,7 @@ export async function DashboardPage() {
       <aside className="app-sidebar">
         <a className="app-brand" href="/"><img src="/preppath-logo.svg" alt="PrepPath" className="app-brand-mark" /><span>PrepPath</span></a>
         {groups.map((group) => (
-          <div key={group} className="sidebar-group">
+          <div key={group} className={styles.sidebarGroup}>
             <div className="sidebar-label">{group}</div>
             <nav className="sidebar-nav">
               {navigation.filter((item) => item.group === group).map(({ label, icon: Icon, href, disabled }) => (
@@ -43,13 +43,13 @@ export async function DashboardPage() {
 
       <main className="app-main">
         <header className="app-header"><div><p className="eyebrow">YOUR PREPARATION</p><h1>Good morning, {firstName}.</h1><p className="header-sub">Your preparation workspace is ready when you are.</p></div></header>
-        <section className="empty-dashboard">
-          <div className="empty-icon"><Target size={23} /></div>
+        <section className={styles.emptyDashboard}>
+          <div className={styles.emptyIcon}><Target size={23} /></div>
           <p className="eyebrow">WELCOME TO PREPPATH</p>
           <h2>Let&apos;s build your preparation path.</h2>
-          <p className="empty-copy">You haven&apos;t set up an exam yet. Choose your exam and preferences first. PrepPath will then build your dashboard from your own preparation data.</p>
-          <a className="setup-button" href="/exam-setup">Set up my exam <ChevronRight size={15} /></a>
-          <div className="empty-note"><span>No demo progress.</span><span>No placeholder study time.</span><span>No fake exam countdown.</span></div>
+          <p className={styles.emptyCopy}>You haven&apos;t set up an exam yet. Choose your exam and preferences first. PrepPath will then build your dashboard from your own preparation data.</p>
+          <a className={styles.setupButton} href="/exam-setup">Set up my exam <ChevronRight size={15} /></a>
+          <div className={styles.emptyNote}><span>No demo progress</span><span>No placeholder study time</span><span>No fake exam countdown</span></div>
         </section>
       </main>
     </div>
