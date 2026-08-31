@@ -10,10 +10,11 @@ const progressSchema = z.object({
 });
 
 export async function saveTopicProgress(formData: FormData) {
+  const rawConfidence = formData.get("confidence");
   const parsed = progressSchema.safeParse({
     topicId: formData.get("topicId"),
     status: formData.get("status"),
-    confidence: formData.get("confidence") ? Number(formData.get("confidence")) : null,
+    confidence: rawConfidence === null || rawConfidence === "" ? undefined : Number(rawConfidence),
   });
   if (!parsed.success) return { error: "Invalid progress details." };
 
@@ -21,7 +22,6 @@ export async function saveTopicProgress(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Your session has expired. Please log in again." };
 
-  // Only allow progress updates for a topic belonging to the user's selected exam.
   const { data: topic, error: topicError } = await supabase
     .from("exam_syllabus_topics")
     .select("id, exam_syllabus_units!inner(exam_variant_id)")
@@ -41,7 +41,7 @@ export async function saveTopicProgress(formData: FormData) {
 
   const { data: existing, error: existingError } = await supabase
     .from("user_topic_progress")
-    .select("first_started_at, completed_at")
+    .select("first_started_at, completed_at, confidence")
     .eq("user_id", user.id)
     .eq("topic_id", parsed.data.topicId)
     .maybeSingle();
@@ -52,14 +52,13 @@ export async function saveTopicProgress(formData: FormData) {
     user_id: user.id,
     topic_id: parsed.data.topicId,
     status: parsed.data.status,
-    confidence: parsed.data.confidence ?? null,
+    confidence: parsed.data.confidence !== undefined ? parsed.data.confidence : (existing?.confidence ?? null),
     updated_at: now,
   };
 
   if (parsed.data.status === "not_started") {
     payload.first_started_at = existing?.first_started_at ?? null;
     payload.completed_at = null;
-    // Resetting a topic means it is no longer the most recently studied item.
     payload.last_studied_at = null;
   } else {
     payload.last_studied_at = now;
