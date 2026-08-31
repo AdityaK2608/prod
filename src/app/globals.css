@@ -9,7 +9,7 @@ a { color:inherit; text-decoration:none; }
 .container { width:min(1120px,calc(100% - 40px)); margin:auto; }
 .nav { height:76px; display:flex; align-items:center; justify-content:space-between; }
 .logo { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-.04em; font-size:20px; }
-.logo-mark { width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,var(--brand),var(--accent)); display:grid; place-items:center; color:#fff; font-size:15px; box-shadow:0 6px 18px #5b4bdb2e; }
+.logo-image { width:30px; height:30px; display:block; }
 .nav-links { display:flex; gap:28px; color:#555267; font-size:13px; font-weight:600; }
 .nav-cta { border:1px solid var(--line); padding:10px 16px; border-radius:10px; font-size:13px; font-weight:700; background:#fff; box-shadow:0 2px 8px #17152b08; }
 .hero { padding:76px 0 86px; text-align:center; }
@@ -26,7 +26,8 @@ h1 { max-width:850px; margin:20px auto 18px; font-size:clamp(42px,6vw,68px); lin
 .circle { width:8px; height:8px; border-radius:50%; background:#d8d5e2; }
 .dashboard { display:grid; grid-template-columns:170px 1fr; min-height:330px; }
 .side { border-right:1px solid var(--line); padding:20px 14px; }
-.side-title { font-size:12px; font-weight:800; margin:0 8px 16px; }
+.side-brand { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:800; margin:0 8px 16px; }
+.side-brand img { width:20px; height:20px; }
 .side-item { padding:9px 10px; font-size:10px; color:#777388; border-radius:8px; margin-bottom:3px; }
 .side-item.active { background:var(--soft); color:var(--brand); font-weight:800; }
 .main { padding:22px; }
