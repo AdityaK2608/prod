@@ -1,3 +1,3 @@
-import { getTopic, saveProgress } from "../../lib/data";
+import { getTopic, getUserExam, saveProgress } from "../../lib/data";
 
-export { getTopic, saveProgress };
+export { getTopic, getUserExam, saveProgress };
