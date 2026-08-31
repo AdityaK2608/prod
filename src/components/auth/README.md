@@ -1,0 +1,1 @@
+Authentication module. UI, validation, server actions, and Supabase integration are intentionally separated for production maintainability.
