@@ -1,6 +1,7 @@
 "use client";
+
 import { useEffect, useState, useTransition } from "react";
-import { ArrowLeft, BookOpen, CircleX, Clock3, Pause, Play, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, CircleX, Clock3, Pause, Play, RotateCcw, Save, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { saveStudySession } from "@/features/sessions/actions/session.actions";
 import styles from "./SessionPage.module.css";
@@ -80,96 +81,126 @@ export function SessionPage({ topics, sessions }: Props) {
         return;
       }
       reset();
-      setMessage("Study session saved.");
+      setMessage("Study session saved successfully.");
     });
   };
 
+  const selectedTopic = topics.find((topic) => topic.id === topicId);
+  const completedCount = sessions.length;
+
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerNav}>
-          <button type="button" className={styles.backButton} onClick={goBack} disabled={pending}>
-            <ArrowLeft size={15} />
-            Back
-          </button>
-          <button type="button" className={styles.exitButton} onClick={exitSession} disabled={pending}>
-            <CircleX size={15} />
-            Exit session
-          </button>
-        </div>
-        <p>STUDY SESSIONS</p>
-        <h1>Study with intention.</h1>
-        <span>Focus on one topic, track the time, and build a repeatable study habit.</span>
-      </header>
-
-      <div className={styles.grid}>
-        <section className={`${styles.card} ${styles.timerCard}`}>
-          <p className={styles.cardEyebrow}>FOCUSED STUDY</p>
-          <h2 className={styles.cardTitle}>{topicId ? "Your session" : "Choose what you're studying"}</h2>
-          <label className={styles.label} htmlFor="study-topic">Syllabus topic</label>
-          <select id="study-topic" value={topicId} onChange={(e) => setTopicId(e.target.value)} disabled={running || pending}>
-            <option value="">Select a topic</option>
-            {topics.map((topic) => (
-              <option key={topic.id} value={topic.id}>Unit {topic.unitNumber} · {topic.title}</option>
-            ))}
-          </select>
-
-          <div className={styles.timerStage}>
-            <div className={styles.timer}>{fmt(seconds)}</div>
-            <div className={styles.timerStatus}>
-              <span className={`${styles.statusDot} ${running ? styles.live : ""}`} />
-              {running ? "Session in progress" : seconds > 0 ? "Session paused" : "Ready to start"}
-            </div>
-          </div>
-
-          <div className={styles.actions}>
-            {running ? (
-              <button type="button" onClick={pause} disabled={pending}>
-                <Pause size={16} /> Pause
-              </button>
-            ) : (
-              <button type="button" onClick={start} disabled={!topicId || pending}>
-                <Play size={16} /> {seconds > 0 ? "Resume" : "Start session"}
-              </button>
-            )}
-            <button type="button" className={styles.secondary} onClick={reset} disabled={pending || (seconds === 0 && !notes)}>
-              <RotateCcw size={15} /> Reset
+      <div className={styles.shell}>
+        <header className={styles.header}>
+          <div className={styles.headerNav}>
+            <button type="button" className={styles.backButton} onClick={goBack} disabled={pending}>
+              <ArrowLeft size={15} />
+              Back
             </button>
-          </div>
-
-          <textarea className={styles.notes} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes — what did you cover, practise, or struggle with?" disabled={pending} />
-          <button type="button" className={styles.save} onClick={save} disabled={pending || seconds < 1}>
-            <Save size={15} /> {pending ? "Saving…" : "Save study session"}
-          </button>
-          {message && <p className={styles.message}>{message}</p>}
-        </section>
-
-        <aside className={`${styles.card} ${styles.historyCard}`}>
-          <div className={styles.historyHeader}>
-            <div>
-              <p className={styles.cardEyebrow}>YOUR ACTIVITY</p>
-              <h2>Recent sessions</h2>
-              <div className={styles.historyMeta}>Your latest saved study time</div>
+            <div className={styles.headerRight}>
+              <span className={styles.examPill}><Sparkles size={13} /> Bihar STET · Computer Science</span>
+              <button type="button" className={styles.exitButton} onClick={exitSession} disabled={pending}>
+                <CircleX size={15} />
+                Exit
+              </button>
             </div>
-            <div className={styles.historyIcon}><BookOpen size={17} /></div>
           </div>
+          <div className={styles.titleBlock}>
+            <p className={styles.eyebrow}>FOCUS MODE</p>
+            <h1>Study with intention.</h1>
+            <span>One topic. One focused block. Measurable progress.</span>
+          </div>
+        </header>
 
-          {sessions.length === 0 ? (
-            <div className={styles.empty}>Your saved sessions will appear here once you complete your first study block.</div>
-          ) : (
-            sessions.map((session) => (
-              <div className={styles.row} key={session.id}>
-                <div className={styles.rowTop}>
-                  <strong className={styles.rowTopic}>{session.topicTitle ?? "General study"}</strong>
-                  <b className={styles.rowDuration}>{Math.round(session.durationSeconds / 60)} min</b>
-                </div>
-                <div className={styles.rowSub}>
-                  {new Date(session.startedAt).toLocaleDateString()} · {new Date(session.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </div>
+        <div className={styles.layout}>
+          <section className={`${styles.card} ${styles.timerCard}`}>
+            <div className={styles.sessionIntro}>
+              <div>
+                <p className={styles.cardEyebrow}>CURRENT SESSION</p>
+                <h2>{selectedTopic?.title ?? "Choose a topic to begin"}</h2>
+                {selectedTopic ? <span>Unit {selectedTopic.unitNumber} · Topic {selectedTopic.topicNumber}</span> : <span>Select from your Bihar STET syllabus</span>}
               </div>
-            ))
-          )}
-        </aside>
+              <div className={`${styles.liveBadge} ${running ? styles.liveBadgeActive : ""}`}>
+                <span /> {running ? "LIVE" : seconds > 0 ? "PAUSED" : "READY"}
+              </div>
+            </div>
+
+            <label className={styles.label} htmlFor="study-topic">Syllabus topic</label>
+            <select id="study-topic" value={topicId} onChange={(e) => setTopicId(e.target.value)} disabled={running || pending}>
+              <option value="">Select a topic</option>
+              {topics.map((topic) => (
+                <option key={topic.id} value={topic.id}>Unit {topic.unitNumber} · {topic.title}</option>
+              ))}
+            </select>
+
+            <div className={styles.timerStage}>
+              <div className={styles.timerLabel}>{running ? "TIME IN SESSION" : "FOCUS TIMER"}</div>
+              <div className={styles.timer}>{fmt(seconds)}</div>
+              <div className={styles.timerStatus}>
+                <span className={`${styles.statusDot} ${running ? styles.live : ""}`} />
+                {running ? "Keep going — you're in focus mode" : seconds > 0 ? "Paused — resume when you're ready" : "Ready when you are"}
+              </div>
+            </div>
+
+            <div className={styles.primaryControls}>
+              <button type="button" className={styles.startButton} onClick={running ? pause : start} disabled={!topicId || pending}>
+                {running ? <Pause size={17} /> : <Play size={17} />}
+                {running ? "Pause session" : seconds > 0 ? "Resume session" : "Start session"}
+              </button>
+              <button type="button" className={styles.resetButton} onClick={reset} disabled={pending || (seconds === 0 && !notes)}>
+                <RotateCcw size={15} /> Reset
+              </button>
+            </div>
+
+            <div className={styles.notesBlock}>
+              <div className={styles.notesLabel}><span>SESSION NOTES</span><small>Optional</small></div>
+              <textarea className={styles.notes} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What did you cover? What felt difficult? Capture it while it's fresh." disabled={pending} />
+            </div>
+
+            <button type="button" className={styles.save} onClick={save} disabled={pending || seconds < 1}>
+              {pending ? <Clock3 size={15} /> : <Save size={15} />}
+              {pending ? "Saving session…" : "Save study session"}
+            </button>
+
+            {message && <div className={styles.message}><CheckCircle2 size={15} /> {message}</div>}
+          </section>
+
+          <aside className={`${styles.card} ${styles.historyCard}`}>
+            <div className={styles.historyHeader}>
+              <div>
+                <p className={styles.cardEyebrow}>YOUR ACTIVITY</p>
+                <h2>Study history</h2>
+                <div className={styles.historyMeta}>{completedCount ? `${completedCount} saved session${completedCount === 1 ? "" : "s"}` : "No sessions saved yet"}</div>
+              </div>
+              <div className={styles.historyIcon}><BookOpen size={17} /></div>
+            </div>
+
+            {sessions.length === 0 ? (
+              <div className={styles.empty}>
+                <div className={styles.emptyIcon}><Clock3 size={19} /></div>
+                <strong>Your history starts here.</strong>
+                <span>Complete your first focused session and it will appear in this timeline.</span>
+              </div>
+            ) : (
+              <div className={styles.historyList}>
+                {sessions.map((session) => (
+                  <div className={styles.row} key={session.id}>
+                    <div className={styles.rowMarker}><span /></div>
+                    <div className={styles.rowBody}>
+                      <div className={styles.rowTop}>
+                        <strong className={styles.rowTopic}>{session.topicTitle ?? "General study"}</strong>
+                        <b className={styles.rowDuration}>{Math.round(session.durationSeconds / 60)} min</b>
+                      </div>
+                      <div className={styles.rowSub}>
+                        {new Date(session.startedAt).toLocaleDateString()} · {new Date(session.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </aside>
+        </div>
       </div>
     </main>
   );
