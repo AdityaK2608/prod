@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
@@ -19,9 +19,14 @@ export async function middleware(request: NextRequest) {
   );
   const { data: { user } } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
-  if (pathname.startsWith("/dashboard") && !user) return NextResponse.redirect(new URL("/login", request.url));
-  if ((pathname === "/login" || pathname === "/signup") && user) return NextResponse.redirect(new URL("/dashboard", request.url));
+
+  if ((pathname.startsWith("/dashboard") || pathname.startsWith("/exam-setup")) && !user) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+  if ((pathname === "/login" || pathname === "/signup") && user) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   return response;
 }
 
-export const config = { matcher: ["/dashboard/:path*", "/login", "/signup"] };
+export const config = { matcher: ["/dashboard/:path*", "/exam-setup/:path*", "/login", "/signup"] };
