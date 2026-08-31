@@ -15,7 +15,13 @@ export type DashboardExam = {
   targetExamDate: string | null;
 };
 
+export type DashboardSyllabus = {
+  units: number;
+  topics: number;
+};
+
 export type DashboardData = {
   user: DashboardUser;
   exam: DashboardExam | null;
+  syllabus: DashboardSyllabus;
 };
