@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Check, Clock3, Play, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Clock3, Play, Save, Target } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { TopicDetail } from "@/features/syllabus/types/syllabus.types";
 import { saveTopicProgress } from "@/features/syllabus/actions/syllabus.actions";
@@ -18,14 +19,15 @@ function renderLesson(markdown: string) {
 }
 
 export function TopicPage({ data }: { data: TopicDetail }) {
+  const router = useRouter();
   const [status, setStatus] = useState(data.topic.status);
   const [confidence, setConfidence] = useState<number | null>(data.topic.confidence);
   const [pending, startTransition] = useTransition();
+  const [saveMessage, setSaveMessage] = useState("");
   const statusLabel = status === "completed" ? "Completed" : status === "in_progress" ? "In progress" : "Not started";
 
-  function updateProgress(nextStatus: "not_started" | "in_progress" | "completed", nextConfidence = confidence) {
-    setStatus(nextStatus);
-    setConfidence(nextConfidence);
+  function persistProgress(nextStatus = status, nextConfidence = confidence, message = "Saved") {
+    setSaveMessage("");
     startTransition(async () => {
       const fd = new FormData();
       fd.set("topicId", data.topic.id);
@@ -35,9 +37,44 @@ export function TopicPage({ data }: { data: TopicDetail }) {
       if (result.error) {
         setStatus(data.topic.status);
         setConfidence(data.topic.confidence);
+        setSaveMessage(result.error);
+        return;
       }
+      setStatus(nextStatus);
+      setConfidence(nextConfidence);
+      setSaveMessage(message);
     });
   }
+
+  function updateProgress(nextStatus: "not_started" | "in_progress" | "completed", nextConfidence = confidence) {
+    setStatus(nextStatus);
+    setConfidence(nextConfidence);
+    persistProgress(nextStatus, nextConfidence);
+  }
+
+  function saveCurrent() {
+    persistProgress(status, confidence, "Progress saved");
+  }
+
+  function saveAndNavigate(target: string) {
+    setSaveMessage("");
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set("topicId", data.topic.id);
+      fd.set("status", status);
+      if (confidence) fd.set("confidence", String(confidence));
+      const result = await saveTopicProgress(fd);
+      if (result.error) {
+        setSaveMessage(result.error);
+        return;
+      }
+      router.push(target);
+      router.refresh();
+    });
+  }
+
+  const previous = data.navigation.previous;
+  const next = data.navigation.next;
 
   return <main className={styles.page}>
     <header className={styles.header}>
@@ -57,6 +94,12 @@ export function TopicPage({ data }: { data: TopicDetail }) {
           <div className={styles.lessonBody}>{renderLesson(data.content.lessonMarkdown)}</div>
           {data.content.keyTerms.length > 0 && <section className={styles.terms}><p className={styles.eyebrow}>KEY TERMS</p><div className={styles.termGrid}>{data.content.keyTerms.map((item) => <div className={styles.term} key={item.term}><strong>{item.term}</strong><span>{item.meaning}</span></div>)}</div></section>}
         </>}
+
+        <footer className={styles.topicNav}>
+          {previous ? <button className={styles.navButton} disabled={pending} onClick={() => saveAndNavigate(`/syllabus/topic/${previous.id}`)}><ArrowLeft size={14}/><span><small>Previous</small><strong>{previous.title}</strong></span></button> : <span />}
+          {saveMessage && <span className={styles.saveMessage}>{saveMessage}</span>}
+          {next ? <button className={`${styles.navButton} ${styles.navNext}`} disabled={pending} onClick={() => saveAndNavigate(`/syllabus/topic/${next.id}`)}><span><small>Next</small><strong>{next.title}</strong></span><ArrowRight size={14}/></button> : <span />}
+        </footer>
       </article>
 
       <aside className={styles.sidebar}>
@@ -66,6 +109,7 @@ export function TopicPage({ data }: { data: TopicDetail }) {
           <p className={styles.sideCopy}>Update your status as you work through this lesson. Progress is saved to your account.</p>
           <button className={styles.primaryButton} disabled={pending || status === "completed"} onClick={() => updateProgress("completed")}><Check size={15}/> {status === "completed" ? "Completed" : "Mark complete"}</button>
           {status !== "completed" && <button className={styles.secondaryButton} disabled={pending} onClick={() => updateProgress("in_progress")}><Play size={14}/> Mark in progress</button>}
+          <button className={styles.saveButton} disabled={pending} onClick={saveCurrent}><Save size={14}/> {pending ? "Saving…" : "Save progress"}</button>
         </section>
 
         <section className={styles.confidenceCard}>
