@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { AppShell } from "../../components/layout/AppShell";
-import { getExamOptions, saveUserExam } from "../../lib/data";
+import { getExamOptions, saveUserExam } from "./exam.service";
 import { navigate } from "../../app/router";
 import type { SessionUser } from "../../types/app";
 
