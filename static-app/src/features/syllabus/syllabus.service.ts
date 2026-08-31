@@ -1,3 +1,3 @@
-import { getSyllabus } from "../../lib/data";
+import { getSyllabus, getUserExam } from "../../lib/data";
 
-export { getSyllabus };
+export { getSyllabus, getUserExam };
