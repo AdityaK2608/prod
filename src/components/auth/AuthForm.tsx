@@ -16,7 +16,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       : await signupAction(new FormData(event.currentTarget));
     setPending(false);
     if (result.error) return setError(result.error);
-    if (mode === "login") window.location.href = "/dashboard";
+    if (mode === "login") window.location.href = "/";
     else setMessage("Account created. Check your email to verify your account.");
   }
 
