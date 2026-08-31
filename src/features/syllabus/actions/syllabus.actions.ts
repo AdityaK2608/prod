@@ -21,23 +21,55 @@ export async function saveTopicProgress(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Your session has expired. Please log in again." };
 
+  // Only allow progress updates for a topic belonging to the user's selected exam.
+  const { data: topic, error: topicError } = await supabase
+    .from("exam_syllabus_topics")
+    .select("id, exam_syllabus_units!inner(exam_variant_id)")
+    .eq("id", parsed.data.topicId)
+    .maybeSingle();
+  if (topicError) return { error: topicError.message };
+  if (!topic) return { error: "Topic not found." };
+
+  const variant = topic.exam_syllabus_units as any;
+  const { data: profile, error: profileError } = await supabase
+    .from("user_exam_profiles")
+    .select("exam_variant_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (profileError) return { error: profileError.message };
+  if (!profile || profile.exam_variant_id !== variant.exam_variant_id) return { error: "This topic is not part of your selected exam." };
+
+  const { data: existing, error: existingError } = await supabase
+    .from("user_topic_progress")
+    .select("first_started_at, completed_at")
+    .eq("user_id", user.id)
+    .eq("topic_id", parsed.data.topicId)
+    .maybeSingle();
+  if (existingError) return { error: existingError.message };
+
   const now = new Date().toISOString();
   const payload: Record<string, unknown> = {
     user_id: user.id,
     topic_id: parsed.data.topicId,
     status: parsed.data.status,
     confidence: parsed.data.confidence ?? null,
-    last_studied_at: now,
     updated_at: now,
   };
 
-  if (parsed.data.status === "in_progress") payload.first_started_at = now;
-  if (parsed.data.status === "completed") {
-    payload.completed_at = now;
-    payload.first_started_at = now;
+  if (parsed.data.status === "not_started") {
+    payload.first_started_at = existing?.first_started_at ?? null;
+    payload.completed_at = null;
+    // Resetting a topic means it is no longer the most recently studied item.
+    payload.last_studied_at = null;
+  } else {
+    payload.last_studied_at = now;
+    payload.first_started_at = existing?.first_started_at ?? now;
+    payload.completed_at = parsed.data.status === "completed" ? (existing?.completed_at ?? now) : null;
   }
 
-  const { error } = await supabase.from("user_topic_progress").upsert(payload, { onConflict: "user_id,topic_id" });
+  const { error } = await supabase
+    .from("user_topic_progress")
+    .upsert(payload, { onConflict: "user_id,topic_id" });
   if (error) return { error: error.message };
   return { success: true };
 }
