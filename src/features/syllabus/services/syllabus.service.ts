@@ -25,9 +25,9 @@ export async function getCurrentUserSyllabus(): Promise<SyllabusUnit[]> {
     .order("unit_number");
   if (unitsError) throw new Error(unitsError.message);
 
-  const unitIds = (units ?? []).map((unit) => unit.id);
-  const { data: progressRows, error: progressError } = unitIds.length
-    ? await supabase.from("user_topic_progress").select("topic_id, status, confidence").eq("user_id", user.id).in("topic_id", (units ?? []).flatMap((u: any) => (u.exam_syllabus_topics ?? []).map((t: any) => t.id)))
+  const topicIds = (units ?? []).flatMap((unit: any) => (unit.exam_syllabus_topics ?? []).map((topic: any) => topic.id));
+  const { data: progressRows, error: progressError } = topicIds.length
+    ? await supabase.from("user_topic_progress").select("topic_id, status, confidence").eq("user_id", user.id).in("topic_id", topicIds)
     : { data: [], error: null };
   if (progressError) throw new Error(progressError.message);
 
@@ -66,6 +66,21 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetail | nul
   const { data: progress, error: progressError } = await supabase.from("user_topic_progress").select("status, confidence, first_started_at, completed_at, last_studied_at").eq("user_id", user.id).eq("topic_id", topicId).maybeSingle();
   if (progressError) throw new Error(progressError.message);
 
+  const { data: topics, error: topicsError } = await supabase
+    .from("exam_syllabus_topics")
+    .select("id, topic_number, title, exam_syllabus_units!inner(exam_variant_id)")
+    .eq("exam_syllabus_units.exam_variant_id", unit.exam_variant_id)
+    .order("topic_number");
+  if (topicsError) throw new Error(topicsError.message);
+
+  // Preserve syllabus order across units for Previous / Next navigation.
+  const ordered = (topics ?? []).map((item: any) => ({ id: item.id, number: item.topic_number, title: item.title }));
+  const index = ordered.findIndex((item) => item.id === topicId);
+  const navigation = {
+    previous: index > 0 ? ordered[index - 1] : null,
+    next: index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null,
+  };
+
   const content = (data.exam_topic_content as any)?.[0];
   const topic: SyllabusTopic = {
     id: data.id,
@@ -86,5 +101,5 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetail | nul
     difficulty: content.difficulty,
   } : null;
 
-  return { topic, content: topicContent, unit: { unitNumber: unit.unit_number, title: unit.title } };
+  return { topic, content: topicContent, unit: { unitNumber: unit.unit_number, title: unit.title }, navigation };
 }
