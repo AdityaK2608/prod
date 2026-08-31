@@ -6,14 +6,14 @@ export default function Home() {
       <nav className="container nav">
         <a className="logo" href="#top"><img className="logo-image" src="/preppath-logo.svg" alt="PrepPath" /><span>PrepPath</span></a>
         <div className="nav-links"><a href="#features">Features</a><a href="#vision">Vision</a><a href="#status">Status</a></div>
-        <a className="nav-cta" href="#status">In build</a>
+        <a className="nav-cta" href="/dashboard">Open app</a>
       </nav>
 
       <section id="top" className="container hero">
         <div className="badge"><span className="dot" /> Product in build</div>
         <h1>Your exam preparation, with a clear path forward.</h1>
         <p>PrepPath is being built for students and aspirants who want to plan their syllabus, track real progress, stay on top of revisions, and know exactly what to do next.</p>
-        <div className="actions"><a className="primary" href="#vision">Explore the vision <ChevronRight size={15} style={{verticalAlign:"middle"}} /></a><a className="secondary" href="#features">See what we&apos;re building</a></div>
+        <div className="actions"><a className="primary" href="/dashboard">Open the product <ChevronRight size={15} style={{verticalAlign:"middle"}} /></a><a className="secondary" href="#features">See what we&apos;re building</a></div>
 
         <div className="preview" aria-label="PrepPath dashboard preview">
           <div className="preview-top"><span className="circle"/><span className="circle"/><span className="circle"/></div>
