@@ -1,4 +1,5 @@
 import { BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Clock3, LayoutDashboard, Settings, Target, TimerReset, Trophy } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import "./DashboardPage.module.css";
 
 const navigation = [
@@ -19,14 +20,20 @@ const subjects = [
   { name: "Algorithms", value: 28, topics: "8 of 29 topics" },
 ];
 
-export function DashboardPage() {
-  const groups = ["OVERVIEW", "PREPARATION", "INSIGHTS"];
+export async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const metadataName = typeof user?.user_metadata?.name === "string" ? user.user_metadata.name.trim() : "";
+  const emailName = user?.email?.split("@")[0]?.trim() ?? "";
+  const displayName = metadataName || emailName || "Aspirant";
+  const firstName = displayName.split(/\s+/)[0] || "Aspirant";
+  const initials = displayName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "A";
 
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
         <a className="app-brand" href="/"><img src="/preppath-logo.svg" alt="" className="app-brand-mark" /><span>PrepPath</span></a>
-        {groups.map((group) => (
+        {["OVERVIEW", "PREPARATION", "INSIGHTS"].map((group) => (
           <div key={group} className="sidebar-group">
             <div className="sidebar-label">{group}</div>
             <nav className="sidebar-nav">
@@ -40,14 +47,14 @@ export function DashboardPage() {
         ))}
         <div className="sidebar-spacer" />
         <a href="#" className="sidebar-link"><Settings size={16} strokeWidth={1.9} /><span>Settings</span></a>
-        <div className="profile-mini"><div className="avatar">A</div><div><strong>Aspirant</strong><span>Computer Science</span></div><ChevronRight size={14} className="profile-chevron" /></div>
+        <div className="profile-mini"><div className="avatar">{initials}</div><div><strong>{displayName}</strong><span>Computer Science</span></div><ChevronRight size={14} className="profile-chevron" /></div>
       </aside>
 
       <main className="app-main">
         <header className="app-header">
           <div>
             <p className="eyebrow">YOUR PREPARATION</p>
-            <h1>Good morning, Aspirant.</h1>
+            <h1>Good morning, {firstName}.</h1>
             <p className="header-sub">Bihar STET 2026 <span>·</span> Paper II <span>·</span> Computer Science</p>
           </div>
           <div className="header-actions"><button className="header-icon" aria-label="Notifications">3</button><a className="header-action" href="#">+ Log study session</a></div>
