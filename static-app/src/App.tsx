@@ -11,7 +11,7 @@ import { Sessions } from "./features/sessions/Sessions";
 import { NotFound } from "./components/ui/NotFound";
 import type { SessionUser } from "./types/app";
 import "./styles.css";
-import "./premium.css";
+import "./premium-fixes.css";
 
 function HomeRouter({ user }: { user: SessionUser }) {
   const [error, setError] = useState("");
