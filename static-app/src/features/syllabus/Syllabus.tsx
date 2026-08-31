@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppShell } from "../../components/layout/AppShell";
-import { getSyllabus, getUserExam } from "../../lib/data";
+import { getSyllabus, getUserExam } from "./syllabus.service";
 import { navigate } from "../../app/router";
 import type { SessionUser, AppExam } from "../../types/app";
 
