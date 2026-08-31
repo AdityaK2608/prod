@@ -66,15 +66,20 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetail | nul
   const { data: progress, error: progressError } = await supabase.from("user_topic_progress").select("status, confidence, first_started_at, completed_at, last_studied_at").eq("user_id", user.id).eq("topic_id", topicId).maybeSingle();
   if (progressError) throw new Error(progressError.message);
 
-  const { data: topics, error: topicsError } = await supabase
+  const { data: orderedRows, error: orderedError } = await supabase
     .from("exam_syllabus_topics")
-    .select("id, topic_number, title, exam_syllabus_units!inner(exam_variant_id)")
+    .select("id, topic_number, title, exam_syllabus_units!inner(exam_variant_id, unit_number)")
     .eq("exam_syllabus_units.exam_variant_id", unit.exam_variant_id)
-    .order("topic_number");
-  if (topicsError) throw new Error(topicsError.message);
+    .order("unit_number", { foreignTable: "exam_syllabus_units", ascending: true })
+    .order("topic_number", { ascending: true });
+  if (orderedError) throw new Error(orderedError.message);
 
-  // Preserve syllabus order across units for Previous / Next navigation.
-  const ordered = (topics ?? []).map((item: any) => ({ id: item.id, number: item.topic_number, title: item.title }));
+  const ordered = (orderedRows ?? []).map((item: any) => ({
+    id: item.id,
+    number: item.topic_number,
+    title: item.title,
+    unitNumber: item.exam_syllabus_units?.unit_number ?? 0,
+  }));
   const index = ordered.findIndex((item) => item.id === topicId);
   const navigation = {
     previous: index > 0 ? ordered[index - 1] : null,
@@ -101,5 +106,13 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetail | nul
     difficulty: content.difficulty,
   } : null;
 
-  return { topic, content: topicContent, unit: { unitNumber: unit.unit_number, title: unit.title }, navigation };
+  return {
+    topic,
+    content: topicContent,
+    unit: { unitNumber: unit.unit_number, title: unit.title },
+    navigation: {
+      previous: navigation.previous ? { id: navigation.previous.id, number: navigation.previous.number, title: navigation.previous.title } : null,
+      next: navigation.next ? { id: navigation.next.id, number: navigation.next.number, title: navigation.next.title } : null,
+    },
+  };
 }
