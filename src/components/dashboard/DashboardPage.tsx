@@ -1,4 +1,5 @@
 import { BarChart3, BookOpen, CalendarDays, CheckCircle2, ChevronRight, Clock3, LayoutDashboard, Settings, Target, TimerReset, Trophy } from "lucide-react";
+import "./DashboardPage.module.css";
 
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", group: "OVERVIEW" },
@@ -94,7 +95,7 @@ export function DashboardPage() {
 
           <article className="panel health-panel">
             <div className="panel-heading"><div><p className="eyebrow">PREPARATION HEALTH</p><h2>You&apos;re moving well.</h2></div></div>
-            <div className="health-content"><div className="health-score">78<span>/100</span></div><div className="health-bars"><HealthRow label="Syllabus coverage" value="On track" kind="good" /><HealthRow label="Study consistency" value="Strong" kind="good" /><HealthRow label="Revision" value="Needs attention" kind="warn" /><HealthRow label="Test performance" value="On track" kind="good" /></div></div>
+            <div className="health-content"><div className="health-ring"><div><strong>78</strong><span>/100</span></div></div><div className="health-bars"><HealthRow label="Syllabus coverage" value="On track" kind="good" /><HealthRow label="Study consistency" value="Strong" kind="good" /><HealthRow label="Revision" value="Needs attention" kind="warn" /><HealthRow label="Test performance" value="On track" kind="good" /></div></div>
             <div className="health-foot">Your biggest opportunity: keep revision within 7 days of completing a topic.</div>
           </article>
         </section>
