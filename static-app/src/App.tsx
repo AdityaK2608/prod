@@ -23,8 +23,7 @@ function HomeRouter({ user }: { user: SessionUser }) {
   return <div className="boot">Loading your preparation…</div>;
 }
 
-function AppRouter({ user }: { user: SessionUser }) {
-  const path = getRoute();
+function AppRouter({ user, path }: { user: SessionUser; path: string }) {
   if (path === "/") return <HomeRouter user={user} />;
   if (path === "/dashboard") return <Dashboard user={user} />;
   if (path === "/exam-setup") return <ExamSetup user={user} />;
@@ -39,19 +38,18 @@ function AppRouter({ user }: { user: SessionUser }) {
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
+  const [path, setPath] = useState(getRoute());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const onHash = () => window.dispatchEvent(new Event("preppath-route"));
-    const onRoute = () => setSession(current => current);
-    window.addEventListener("hashchange", onHash);
-    window.addEventListener("preppath-route", onRoute);
+    const onHashChange = () => setPath(getRoute());
+    window.addEventListener("hashchange", onHashChange);
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
     const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
-    return () => { window.removeEventListener("hashchange", onHash); window.removeEventListener("preppath-route", onRoute); data.subscription.unsubscribe(); };
+    return () => { window.removeEventListener("hashchange", onHashChange); data.subscription.unsubscribe(); };
   }, []);
 
   if (loading) return <div className="boot"><div className="brandMark">P</div><span>Loading PrepPath…</span></div>;
   if (!session) return <AuthScreen />;
-  return <AppRouter user={session.user} />;
+  return <AppRouter user={session.user} path={path} />;
 }
